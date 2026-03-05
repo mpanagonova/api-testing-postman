@@ -1,0 +1,382 @@
+{
+  "info": {
+    "_postman_id": "68507232-70fd-47bd-ad30-df0694b2d02a",
+    "name": "MovieCatalog-Requests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "27789095",
+    "_collection_link": "https://go.postman.co/collection/27789095-68507232-70fd-47bd-ad30-df0694b2d02a?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Login and Authentication",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function(){",
+              "    pm.response.to.have.status(200);",
+              "})",
+              "",
+              "pm.test(\"Response body has required attributes\", function(){",
+              "    var responseBody = pm.response.json();",
+              "    pm.expect(responseBody).to.have.property('email');",
+              "    pm.expect(responseBody).to.have.property('password');",
+              "    pm.expect(responseBody).to.have.property('accessToken');",
+              "})",
+              "",
+              "pm.collectionVariables.set(\"token\", pm.response.json().accessToken); "
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n\"email\": \"mpanagonova@gmail.com\",\n\"password\": \"test1234\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/api/User/Authentication",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "api",
+            "User",
+            "Authentication"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create a New Movie",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const movies = [\"Echo\", \"Drift\", \"Signal\", \"Fragments\", \"Afterlight\", \"Pulse\", \"Static\", \"Fade\"];",
+              "const randomMovie = movies[Math.floor(Math.random() * movies.length)];",
+              "const randomNumber = Math.floor(Math.random() * 1000);",
+              "const randomTitle = randomMovie + '' + randomNumber;",
+              "",
+              "pm.collectionVariables.set(\"randomTitle\", randomTitle);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success message\", function() {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson.msg).to.eql(\"Movie created successfully!\")",
+              "})",
+              "",
+              "pm.test(\"Title and description match request\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson.movie.title).to.eql(pm.collectionVariables.get(\"randomTitle\"));",
+              "    pm.expect(responseJson.movie.description).to.eql(\"Movie created successfully!\");",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n\"title\": \"{{randomTitle}}\",\n\"description\": \"Movie created successfully!\",\n\"posterUrl\": \"\",\n\"trailerLink\": \"\",\n\"isWatched\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/api/Movie/Create",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "api",
+            "Movie",
+            "Create"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List all Movies",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "})",
+              "",
+              "pm.test(\"Response is an array with at least one movie\", function(){",
+              "    var responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.be.an('array').that.is.not.empty;",
+              "})",
+              "",
+              "pm.test(\"Extract ID of the last created movie\", function (){",
+              "    var responseDATA = pm.response.json();",
+              "    var lastMovie = responseDATA[responseDATA.length - 1]",
+              "    var lastMovieID = lastMovie.id",
+              "    pm.collectionVariables.set(\"lastMovieID\", lastMovieID)",
+              "})"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseURL}}/api/Catalog/All",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "api",
+            "Catalog",
+            "All"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Edit the Last Movie",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "})",
+              "",
+              "var responseJson = pm.response.json();",
+              "",
+              "pm.test(\"Movie edited successfully message is returned\", function () {",
+              "    pm.expect(responseJson.msg).to.eql(\"Movie edited successfully!\");",
+              "})",
+              "",
+              "pm.test(\"Title is correctly changed\", function () {",
+              "    pm.expect(responseJson.movie.title).to.eql(\"PostStatic345\")",
+              "})"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n\"title\": \"PostStatic345\",\n\"description\": \"Movie edited successfully!\",\n\"posterUrl\": \"\",\n\"trailerLink\": \"\",\n\"isWatched\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/api/Movie/Edit?movieId={{lastMovieID}}",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "api",
+            "Movie",
+            "Edit"
+          ],
+          "query": [
+            {
+              "key": "movieId",
+              "value": "{{lastMovieID}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete the Edited Movie",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "})",
+              "",
+              "pm.test(\"Response body is a string\", function () {",
+              "    var responseBody = pm.response.text();",
+              "    pm.expect(typeof responseBody).to.eql('string');",
+              "})",
+              "",
+              "pm.test(\"Response has delete success message\", function (){",
+              "    var responseJson = pm.response.json();",
+              "    pm.expect(responseJson.msg).to.eql(\"Movie deleted successfully!\");",
+              "})"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseURL}}/api/Movie/Delete?movieId={{lastMovieID}}",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "api",
+            "Movie",
+            "Delete"
+          ],
+          "query": [
+            {
+              "key": "movieId",
+              "value": "{{lastMovieID}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseURL",
+      "value": "http://144.91.123.158:5000"
+    },
+    {
+      "key": "token",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJKd3RTZXJ2aWNlQWNjZXNzVG9rZW4iLCJqdGkiOiI4ZGRkZjJlMy02MzBjLTQxYWItOWJhMi05Y2Q3YTAwNTQxZWMiLCJpYXQiOiIwMi8yOC8yMDI2IDEyOjI4OjA1IiwiVXNlcklkIjoiYzE2NTQzNzItMWFkNy00ODE1LTYyMDItMDhkZTc2OTcxYWI5IiwiRW1haWwiOiJtcGFuYWdvbm92YUBnbWFpbC5jb20iLCJVc2VyTmFtZSI6Im1wYW5hZ29ub3ZhIiwiZXhwIjoxNzcyMzAzMjg1LCJpc3MiOiJNb3ZpZUNhdGFsb2dfQXBwX1NvZnRVbmkiLCJhdWQiOiJNb3ZpZUNhdGFsb2dfV2ViQVBJX1NvZnRVbmkifQ.O3ztcmhceglNAGbLyS21DZ_9doOYKJZYoMvgavf5g48"
+    },
+    {
+      "key": "randomTitle",
+      "value": "Echo642"
+    },
+    {
+      "key": "lastMovieID",
+      "value": "b7073cdd-4234-4308-d5aa-08de76979b7f"
+    }
+  ]
+}
